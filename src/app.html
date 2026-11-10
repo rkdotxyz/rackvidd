@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stockholm in Time · Ink and lines</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#f2ede3;--ink:#2a2724;--ink2:#5d5850;--ink3:#8f887c;--line:#dadad7;--panel:#fafaf9;--mono:'IBM Plex Mono',ui-monospace,monospace;--sans:'IBM Plex Sans',system-ui,sans-serif;--serif:'IBM Plex Serif',Georgia,serif}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#f1f1ef;color:var(--ink);font-family:var(--sans);overflow:hidden;-webkit-font-smoothing:antialiased}
+canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:pointer}
+#gl{opacity:0;pointer-events:none;transition:opacity .5s}
+body.three #gl{opacity:1;pointer-events:auto}
+body.three canvas#c{visibility:hidden}
+header{position:fixed;left:12px;top:10px;pointer-events:none;max-width:460px;background:rgba(241,241,239,.88);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);padding:9px 12px;border-radius:10px;z-index:2}
+header h1{font-family:var(--mono);font-weight:600;font-size:13px;letter-spacing:.14em;margin:0;text-transform:uppercase}
+header h1 i{font-family:var(--serif);font-style:italic;font-weight:400;letter-spacing:0;text-transform:none;font-size:16px}
+header p{margin:6px 0 0;font-size:13px;color:var(--ink2);line-height:1.45}
+#panel{position:fixed;left:12px;bottom:12px;z-index:3;background:rgba(250,250,249,.94);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px;max-width:min(560px,calc(100% - 24px))}
+.lab{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--ink3);text-transform:uppercase}
+.row{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+button{font-family:var(--mono);font-size:12px;color:var(--ink2);background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:6px 8px;cursor:pointer}
+button:hover{color:var(--ink);background:#efe8da}
+button.on{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.keys{display:grid;grid-template-columns:repeat(4,auto);gap:4px 14px;font-size:11.5px;color:var(--ink2)}
+.keys span{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.keys s{display:inline-block;width:22px;height:9px;border-radius:9px 9px 9px 2px;text-decoration:none;opacity:.8}
+#note{font-size:10.5px;color:var(--ink3);font-family:var(--mono);line-height:1.5}
+#read{position:fixed;right:16px;top:16px;pointer-events:none;z-index:4;background:rgba(42,39,36,.92);color:#f7f3ea;border-radius:10px;padding:9px 11px;font-size:12px;line-height:1.45;max-width:270px;display:none;backdrop-filter:blur(3px)}
+#read b{font-weight:600;font-size:13px}
+#read .n{font-family:var(--mono);font-size:11.5px;color:#d9d2c4;margin-top:2px}
+#read .p{margin-top:5px;display:flex;flex-wrap:wrap;gap:3px}
+.pill{display:inline-block;border-radius:4px;padding:0 4px;color:#fff;font-weight:600;font-family:var(--mono);font-size:10.5px;line-height:1.55}
+#hint{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--paper);background:var(--ink);border-radius:999px;padding:9px 16px;pointer-events:none;text-transform:uppercase;transition:opacity .5s;z-index:4}
+#zoom{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:4px;z-index:3}
+#zoom button{width:34px;height:34px;padding:0;font-size:15px}
+body.three #zoom{display:none}
+footer{position:fixed;right:62px;bottom:14px;font-size:10px;color:var(--ink3);font-family:var(--mono);text-align:right;max-width:40%;line-height:1.5}
+footer a{color:var(--ink3)}
+body.three footer{right:16px}
+@media (max-width:760px){#read{top:auto;bottom:calc(var(--ph,260px) + 18px);right:8px;left:8px;max-width:none} header p{display:none} .keys{grid-template-columns:repeat(2,auto)} footer{display:none} #panel{gap:7px;padding:9px}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<header>
+  <h1>Stockholm i tid · <i>ink</i></h1>
+  <p>Click anywhere. Ink spreads as far as SL takes you from that spot, strong up to 30 minutes and thinning out towards an hour, while the lines you'd ride grow out to every station they get you to.</p>
+</header>
+<div id="hint">Click anywhere on the map</div>
+<div id="panel">
+  <div class="keys" id="keys"></div>
+  <div id="note">Lines: solid = metro, tram, commuter rail, bus · dotted = ferry. * Commuter rail and ferries 80, 82, 89 use estimated timetables; piers are approximate. Everything else is the SL timetable (2022), weekday, leaving 08:00.</div>
+</div>
+<div id="read"></div>
+<div id="zoom"><button id="zin">+</button><button id="zout">−</button><button id="zfit" style="font-size:11px">⤢</button></div>
+<footer>SL GTFS (weekday 2022) · map © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors (ODbL) · Stockholm stad (CC0) · Prototype by RK</footer>
+
+<script>/*@@DATA@@*/</script>
+<script>/*@@ENGINE@@*/</script>
+<script>/*@@BASE@@*/</script>
+<script>
+(function(){
+
+const cv = document.getElementById('c');
+const B = Base({ canvas: cv, draw: () => { dirty = true; }, onTap: (x, y) => want(x, y), onHover: null,
+  insets: () => ({ left: 0, right: 0, top: 70, bottom: innerWidth > 760 ? 120 : 160 }) });
+const { E, M, D, NX, NY, CELL, ctx } = B;
+const BM = D.base, dec = Engine.dec;
+const decLine = b => { const a = dec(b, Int16Array), f = new Float32Array(a.length); for (let i = 0; i < a.length; i++) f[i] = a[i] * 10; return f; };
+const GREEN = BM.green.map(g => ({ kind: g.kind, polys: g.polys.map(p => p.map(decLine)) }));
+const LAKES = BM.lakes.map(decLine);
+const ROADS = BM.roads.map(r => ({ tier: r.tier, lines: r.lines.map(decLine) })).sort((a, b) => b.tier - a.tier);
+const DIST = BM.districts.map(d => ({ ...d, ring: decLine(d.ring) }));
+
+// ---------- ink: the colour of each line ----------
+const INK = {
+  '10': '#1f6fd1', '11': '#1f6fd1', '13': '#d8282f', '14': '#d8282f', '17': '#2b9a4a', '18': '#2b9a4a', '19': '#2b9a4a',
+  '7': '#7d807a', '12': '#4f7fa0', '21': '#a85a2a', '30': '#d97a00',
+  '40': '#e0559a', '41': '#e0559a', '43': '#e0559a', '27': '#8a4f9e', '28': '#8a4f9e', '29': '#8a4f9e', '25': '#0f9ea3', '26': '#0f9ea3',
+  '80': '#1b7fae', '82': '#1b7fae', '89': '#1b7fae'
+};
+const BLUEBUS = new Set(['1', '2', '3', '4', '6']);
+const inkOf = r => r ? (INK[r] || (BLUEBUS.has(r) ? '#2f5fa8' : '#c4473a')) : '#9a8a6c';
+const PAL = [], PALIDX = {};
+const palIdx = h => { if (!(h in PALIDX)) { PALIDX[h] = PAL.length; PAL.push([parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]); } return PALIDX[h]; };
+const WALK = palIdx('#9a8a6c');
+const modeOf = r => { const i = D.refs.indexOf(r); return i < 0 ? 'walk' : D.routeMode[i]; };
+const TM = 30, TMAX = 60;
+const noise = new Float32Array(NX * NY); for (let i = 0; i < noise.length; i++) noise[i] = Math.random();
+
+// ---------- blooms ----------
+const S = { blooms: [], lastMove: 0, cur: null, view: 2 };
+let dirty = true;
+function makeBloom(x, y, label) {
+  const r = B.route(x, y, 8 * 3600), min = r.min, first = r.first;
+  const stopCol = new Int16Array(B.SN).fill(WALK), stopRoute = new Array(B.SN).fill(null);
+  const segs = new Map(), t0 = first.t0;
+  for (let s = 0; s < B.SN; s++) {
+    if (min[s] > TMAX) continue;
+    const legs = E.path(first, s);
+    for (let i = legs.length - 1; i >= 0; i--) if (!legs[i].walk) { stopRoute[s] = legs[i].route; stopCol[s] = palIdx(inkOf(legs[i].route)); break; }
+    for (const l of legs) {            // every hop of every ride on the way, timed from departure
+      if (l.walk) continue;
+      for (let c = l.board; c <= l.alight; c++) {
+        if (E.ctrip[c] !== l.trip || segs.has(c)) continue;
+        const ta = min[E.cfrom[c]], tb = Math.max(min[E.cto[c]], ta + 0.2);
+        if (ta > TMAX) continue;
+        segs.set(c, { a: E.cfrom[c], b: E.cto[c], ta, tb: Math.max(tb, ta + 0.2), route: l.route, mode: modeOf(l.route) });
+      }
+    }
+  }
+  const cellT = new Float32Array(NX * NY).fill(999), cellC = new Uint8Array(NX * NY), KN = B.KN;
+  let n30 = 0, n60 = 0; const lines = new Map();
+  for (const k of B.landCells) {
+    const i = k % NX, j = (k / NX) | 0;
+    let t = Math.hypot(B.cellX(i) - x, B.cellY(j) - y) / M.walk / 60, best = -1;
+    for (let q = 0; q < KN; q++) { const s = B.near[k * KN + q], tt = min[s] + B.neard[k * KN + q] / 60; if (tt < t) { t = tt; best = s; } }
+    cellT[k] = t; cellC[k] = best >= 0 ? stopCol[best] : WALK;
+    if (t <= TMAX) n60++;
+    if (t <= TM) { n30++; const rr = best >= 0 ? stopRoute[best] : null; if (rr) lines.set(rr, (lines.get(rr) || 0) + 1); }
+  }
+  const tiny = document.createElement('canvas'); tiny.width = NX; tiny.height = NY;
+  const walkKm = TM * 60 * M.walk / 1000, km2 = n30 * 0.04;
+  return { x, y, label, segs: [...segs.values()].sort((p, q) => p.ta - q.ta), cellT, cellC, tiny, tctx: tiny.getContext('2d'), born: performance.now(), dead: 0, rev: 0,
+    km2, km60: n60 * 0.04, times: km2 / (Math.PI * walkKm * walkKm), lines, seed: (Math.random() * 1e5) | 0 };
+}
+function inkAlpha(b, k, lim, reveal) {
+  const t = b.cellT[k]; if (t > lim) return -1;
+  const front = reveal < 1 ? Math.max(0, 1 - (lim - t) / 2.2) : 0;
+  let a;
+  if (t <= TM) { const u = t / TM; a = 0.3 + 0.5 * Math.pow(u, 4); }
+  else a = 0.34 * Math.pow(1 - (t - TM) / (TMAX - TM), 1.4);
+  a += 0.3 * front;
+  if (b.cellC[k] === WALK) a *= 0.55;
+  return a * (0.72 + 0.56 * noise[(k + b.seed) % noise.length]);
+}
+function paintBloom(b, reveal) {
+  const lim = TMAX * reveal, img = b.tctx.createImageData(NX, NY), px = img.data;
+  for (const k of B.landCells) {
+    const a = inkAlpha(b, k, lim, reveal); if (a < 0) continue;
+    const c = PAL[b.cellC[k]], q = k * 4; px[q] = c[0]; px[q + 1] = c[1]; px[q + 2] = c[2]; px[q + 3] = Math.min(255, a * 255);
+  }
+  b.tctx.putImageData(img, 0, 0);
+}
+function want(x, y, label) {
+  if (x < M.x0 || x > M.x1 || y < M.y0 || y > M.y1) return;
+  const cur = S.blooms.find(b => !b.dead);
+  if (cur && Math.hypot(cur.x - x, cur.y - y) < 160) return;
+  const now = performance.now();
+  let clearing = false;
+  S.blooms.forEach(b => { if (!b.dead) { b.dead = now; clearing = true; } else if (now - b.dead < FADE) clearing = true; });
+  if (!label) {
+    let best = null, bd = 1e18;
+    for (const d of DIST) { const dd = (d.x - x) ** 2 + (d.y - y) ** 2; if (dd < bd) { bd = dd; best = d; } }
+    const n = B.nearestStop(x, y);
+    label = best && bd < 1500 * 1500 ? best.name : (n.d / 1000).toFixed(1) + ' km from ' + B.names[n.s];
+  }
+  const b = makeBloom(x, y, label); if (clearing) b.born = now + FADE; S.blooms.push(b); S.cur = b;
+  while (S.blooms.length > 7) S.blooms.shift();
+  document.getElementById('hint').style.opacity = 0;
+  readout();
+}
+
+const read = document.getElementById('read');
+function readout() {
+  const b = S.cur;
+  if (!b) { read.style.display = 'none'; return; }
+  const ls = [...b.lines.entries()].sort((p, q) => q[1] - p[1]).slice(0, 10).map(([r]) => {
+    const md = modeOf(r), pre = md === 'metro' ? 'T' : md === 'tram' ? 'L' : md === 'commuter' ? 'J' : md === 'ferry' ? 'B' : '';
+    return `<span class="pill" style="background:${inkOf(r)}">${pre}${r}</span>`;
+  }).join('');
+  read.innerHTML = `<b>${b.label}</b><div class="n">30 min → ${Math.round(b.km2)} km² · ×${b.times >= 10 ? Math.round(b.times) : b.times.toFixed(1)} walking<br>60 min → ${Math.round(b.km60)} km² (fading)</div><div class="p">${ls || '<span style="opacity:.7">on foot only</span>'}</div>`;
+  read.style.display = 'block';
+}
+
+// ---------- the basemap (shared by 2D and the 3D ground texture) ----------
+const BASECOL = { land: '#f1f1ef', water: '#d9dadb', lake: '#d9dadb', park: '#e7e7e5', wood: '#e2e2e0', road: ['#d2d2d0', '#d7d7d5', '#dddddb', '#e3e3e1'], roadCase: '#c4c4c2' };
+function drawBase(g, P, s, opt = {}) {
+  g.fillStyle = BASECOL.land; g.fillRect(-1e5, -1e5, 2e5, 2e5);
+  const poly = (rings) => { g.beginPath(); for (const r of rings) { for (let i = 0; i < r.length; i += 2) { const q = P(r[i], r[i + 1]); i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]); } g.closePath(); } };
+  for (const gr of GREEN) { g.fillStyle = BASECOL[gr.kind]; for (const p of gr.polys) { poly(p); g.fill('evenodd'); } }
+  g.fillStyle = BASECOL.water; for (const p of B.water) { poly(p); g.fill('evenodd'); }
+  g.fillStyle = BASECOL.lake; for (const l of LAKES) { poly([l]); g.fill(); }
+  g.strokeStyle = 'rgba(120,120,120,.45)'; g.lineWidth = Math.max(0.6, 0.8 * (opt.lw || 1)); g.lineJoin = 'round';
+  for (const f of B.coast) { g.beginPath(); for (let i = 0; i < f.length; i += 2) { const q = P(f[i], f[i + 1]); i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]); } g.stroke(); }
+  // district outlines, very faint
+  if (!opt.noDist) {
+  g.strokeStyle = 'rgba(110,110,110,.16)'; g.lineWidth = 0.7 * (opt.lw || 1); g.setLineDash([3 * (opt.lw || 1), 3 * (opt.lw || 1)]);
+  for (const d of DIST) { g.beginPath(); for (let i = 0; i < d.ring.length; i += 2) { const q = P(d.ring[i], d.ring[i + 1]); i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]); } g.closePath(); g.stroke(); }
+  g.setLineDash([]);
+  }
+  // roads: minor first, motorways on top; widths in metres, with a floor in pixels
+  g.lineCap = 'round';
+  const W = [34, 24, 16, 10];
+  for (const r of ROADS) {
+    const w = Math.max([1.6, 1.3, 0.9, 0.55][r.tier] * (opt.lw || 1), W[r.tier] * s);
+    if (r.tier <= 1) { g.strokeStyle = BASECOL.roadCase; g.lineWidth = w + 1.2 * (opt.lw || 1); for (const f of r.lines) { g.beginPath(); for (let i = 0; i < f.length; i += 2) { const q = P(f[i], f[i + 1]); i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]); } g.stroke(); } }
+    g.strokeStyle = r.tier <= 1 ? '#fafafa' : BASECOL.road[r.tier]; g.lineWidth = w;
+    for (const f of r.lines) { g.beginPath(); for (let i = 0; i < f.length; i += 2) { const q = P(f[i], f[i + 1]); i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]); } g.stroke(); }
+  }
+}
+function drawLabels(g, P, s, scale = 1) {
+  // district names, only when there is room
+  const minArea = s > 0.06 ? 0 : s > 0.035 ? 1.2 : 2.6;
+  g.font = `italic 400 ${11 * scale}px "IBM Plex Serif", Georgia, serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+  const placed = [];
+  for (const d of [...DIST].sort((a, b) => b.area - a.area)) {
+    if (d.area < minArea) continue;
+    const p = P(d.x, d.y), w = g.measureText(d.name).width;
+    if (placed.some(q => Math.abs(q[0] - p[0]) < (w + q[2]) / 2 + 6 && Math.abs(q[1] - p[1]) < 14 * scale)) continue;
+    placed.push([p[0], p[1], w]);
+    g.fillStyle = 'rgba(245,245,243,.75)'; g.fillText(d.name, p[0] + 0.6, p[1] + 0.6);
+    g.fillStyle = 'rgba(90,90,90,.6)'; g.fillText(d.name, p[0], p[1]);
+  }
+}
+
+// ---------- the lines you'd ride, growing out with the ink ----------
+const RIDE = { metro: [3.2, []], commuter: [2.6, []], tram: [2.2, []], ferry: [2, [2, 4]], bus: [1.3, []] };
+const ORDER = { bus: 0, ferry: 1, tram: 2, commuter: 3, metro: 4 };
+function drawRides(b, now, P) {
+  const alpha = b.dead ? Math.max(0, 1 - (now - b.dead) / FADE) : 1; if (alpha <= 0) return;
+  const lim = TMAX * b.rev, stopsOn = new Map();
+  const segs = b.segs.filter(g => g.ta < lim).sort((p, q) => ORDER[p.mode] - ORDER[q.mode]);
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  for (const pass of [1]) {
+    for (const g of segs) {
+      const f = Math.min(1, (lim - g.ta) / (g.tb - g.ta)), A = P(E.sx[g.a], E.sy[g.a]), Bp = P(E.sx[g.b], E.sy[g.b]);
+      const x = A[0] + (Bp[0] - A[0]) * f, y = A[1] + (Bp[1] - A[1]) * f;
+      const [w, dash] = RIDE[g.mode] || RIDE.bus, late = g.tb > TM ? Math.max(0.3, 1 - (Math.min(g.tb, TMAX) - TM) / (TMAX - TM)) : 1;
+      if (pass === 0) { ctx.globalAlpha = alpha * late * 0.85; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = w + 2.4; ctx.setLineDash([]); }
+      else { ctx.globalAlpha = alpha * late; ctx.strokeStyle = inkOf(g.route); ctx.lineWidth = w; ctx.setLineDash(dash); }
+      ctx.beginPath(); ctx.moveTo(A[0], A[1]); ctx.lineTo(x, y); ctx.stroke();
+      if (pass === 1) { if (!stopsOn.has(g.a)) stopsOn.set(g.a, [g, late]); if (f >= 1) stopsOn.set(g.b, [g, late]); }
+    }
+  }
+  ctx.setLineDash([]);
+  // stations reached on those lines
+  for (const [s, [g, late]] of stopsOn) {
+    if (g.mode === 'bus') continue;
+    const p = P(E.sx[s], E.sy[s]); ctx.globalAlpha = alpha * late;
+    ctx.beginPath(); ctx.arc(p[0], p[1], g.mode === 'metro' ? 3 : 2.4, 0, 7); ctx.fillStyle = '#ffffff'; ctx.fill(); ctx.lineWidth = 1.4; ctx.strokeStyle = inkOf(g.route); ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ---------- 2D drawing ----------
+const grain = (() => { const c = document.createElement('canvas'); c.width = c.height = 220; const g = c.getContext('2d'), im = g.createImageData(220, 220); for (let i = 0; i < im.data.length; i += 4) { const v = 120 + Math.random() * 120; im.data[i] = im.data[i + 1] = im.data[i + 2] = v; im.data[i + 3] = 16; } g.putImageData(im, 0, 0); return c; })();
+let grainPat = null;
+const SPREAD = 3200, FADE = 300;
+function frame(now) {
+  requestAnimationFrame(frame);
+  let busy = false;
+  for (const b of S.blooms) {
+    const p = Math.max(0, Math.min(1, (now - b.born) / SPREAD)), e = 1 - Math.pow(1 - p, 2.2);
+    if (e > b.rev + 0.002 || (p >= 1 && b.rev < 1)) { b.rev = p >= 1 ? 1 : e; paintBloom(b, b.rev); }
+    if (p < 1 || b.dead || now < b.born) busy = true;
+  }
+  const keep = [];
+  for (const b of S.blooms) { if (!b.dead || now - b.dead < FADE) keep.push(b); }
+  S.blooms = keep;
+  if (!busy && !dirty && S.blooms.every(b => now - b.born > SPREAD + 4000)) return;
+  dirty = false; draw(now);
+}
+function draw(now) {
+  const P = B.toS, s = B.view.s;
+  ctx.setTransform(B.DPR, 0, 0, B.DPR, 0, 0);
+  drawBase(ctx, P, s);
+  const o = P(M.x0, M.y0), w = NX * CELL * s, h = NY * CELL * s, cellPx = CELL * s;
+  for (const b of S.blooms) {
+    const age = now - b.born, alpha = b.dead ? Math.max(0, 1 - (now - b.dead) / FADE) : 1;
+    if (alpha <= 0) continue;
+    if (age < 0) continue;
+    const bleed = 1 + 0.5 * Math.min(1, age / 5000) + (b.dead ? 0.4 * (1 - alpha) : 0);
+    ctx.save(); ctx.globalCompositeOperation = 'multiply'; ctx.imageSmoothingEnabled = true;
+    ctx.globalAlpha = alpha; ctx.filter = `blur(${(cellPx * 0.55 * bleed).toFixed(2)}px)`; ctx.drawImage(b.tiny, o[0], o[1], w, h);
+    ctx.globalAlpha = alpha * 0.32; ctx.filter = `blur(${(cellPx * 0.18).toFixed(2)}px)`; ctx.drawImage(b.tiny, o[0], o[1], w, h);
+    ctx.restore();
+  }
+  grainPat = grainPat || ctx.createPattern(grain, 'repeat');
+  ctx.save(); ctx.globalCompositeOperation = 'multiply'; ctx.fillStyle = grainPat; ctx.fillRect(0, 0, B.W, B.H); ctx.restore();
+  drawLabels(ctx, P, s);
+  for (const b of S.blooms) drawRides(b, now, P);
+  if (S.cur && now >= S.cur.born) {
+    const p = P(S.cur.x, S.cur.y), pulse = ((now - S.cur.born) % 2400) / 2400;
+    ctx.beginPath(); ctx.arc(p[0], p[1], 6 + pulse * 14, 0, 7); ctx.strokeStyle = `rgba(42,39,36,${0.45 * (1 - pulse)})`; ctx.lineWidth = 1.2; ctx.stroke();
+    ctx.beginPath(); ctx.arc(p[0], p[1], 3.6, 0, 7); ctx.fillStyle = '#2a2724'; ctx.fill(); ctx.strokeStyle = '#f7f3ea'; ctx.lineWidth = 1.5; ctx.stroke();
+  }
+}
+
+// ---------- panel ----------
+const KEYS = [['Blue line', '#1f6fd1'], ['Red line', '#d8282f'], ['Green line', '#2b9a4a'], ['Tvärbanan', '#d97a00'],
+  ['Pendeltåg*', '#e0559a'], ['Roslagsbanan*', '#8a4f9e'], ['Saltsjöbanan*', '#0f9ea3'], ['Ferry*', '#1b7fae'],
+  ['Blue bus', '#2f5fa8'], ['Bus', '#c4473a'], ['Other tram', '#4f7fa0'], ['Walking', '#9a8a6c']];
+document.getElementById('keys').innerHTML = KEYS.map(([n, c]) => `<span><s style="background:${c}"></s>${n}</span>`).join('');
+document.getElementById('zin').onclick = () => { const c = B.center(); B.zoomAt(c[0], c[1], 1.4); };
+document.getElementById('zout').onclick = () => { const c = B.center(); B.zoomAt(c[0], c[1], 1 / 1.4); };
+document.getElementById('zfit').onclick = () => { B.fit(); dirty = true; };
+addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const k = e.key.toLowerCase();
+  if (k === 'f') { B.fit(); dirty = true; }
+});
+const fit0 = B.fit; B.fit = () => { fit0(); B.view.s *= innerWidth > 760 ? 1.45 : 1.25; B.view.cx += 600; B.view.cy += 1200; };
+B.resize();
+const setPh = () => document.documentElement.style.setProperty('--ph', document.getElementById('panel').offsetHeight + 'px'); setPh(); addEventListener('resize', setPh);
+if (document.fonts) document.fonts.ready.then(() => { dirty = true; });
+requestAnimationFrame(frame);
+window.__want = want;
+})();
+</script>
+</body>
+</html>
