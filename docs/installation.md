@@ -29,19 +29,6 @@ No screen to touch, no text to read, no sound. The map on the table is the only 
 
 **Why this arrangement:** the projector sits on the table pointing away from visitors, so nobody walks through the beam or casts a shadow, and nothing has to be rigged overhead. The visitor looks down to place the token and up to watch the result, which keeps the map and the painting separate, the same split as the [prototype](https://rackvidd.vercel.app): map on the left, sheet on the right.
 
-## Equipment
-
-| Item | Provided by | Notes |
-| --- | --- | --- |
-| Projector | NAVET if available, otherwise rented | Bright enough for a lit room; HDMI input; keystone or lens shift |
-| Wall or projection screen | Venue | About 2.5 m wide, light and plain |
-| Table, about 120 × 80 cm | NAVET | Holds the projector, map, camera and laptop |
-| Power | Venue | Two outlets or one extension cord to the table |
-| Laptop | Me | Runs everything; works offline |
-| USB webcam and clamp arm | Me | Mounted about 50 cm above the map, looking straight down |
-| A3 map print, mounted on board | Me (from the 1,500 SEK) | Same map as the prototype, with four corner markers |
-| Tokens (two, one spare) | Me (from the 1,500 SEK) | Small 3D-printed discs with a marker on top |
-| Small clamp lamp (optional) | Me | Even light on the map helps the camera |
 
 ## How it works
 
