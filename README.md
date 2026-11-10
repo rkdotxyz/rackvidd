@@ -15,7 +15,7 @@ Open `index.html` in a browser. It is one self-contained file and works offline 
 | Version | What it is |
 | --- | --- |
 | **v13** (current, `index.html`) | Split view: greyscale map on the left, ink and lines on a paper sheet on the right. Covers every station in the data, with municipality borders. |
-| v11 (`versions/v11.html`, tag `v11`) | Ink and lines drawn directly on the map. |
+| v11 (`versions/v11.html`, commit `350b90a`) | Ink and lines drawn directly on the map. |
 
 ## How it works
 
