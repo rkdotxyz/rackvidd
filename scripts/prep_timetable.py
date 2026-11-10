@@ -27,7 +27,7 @@ K = 'sources/stockholm-stadsdelar/geojson/simplified/'
 LAT0, LON0 = 59.33, 18.06
 MY = 111320.0
 MX = 111320.0 * math.cos(math.radians(LAT0))
-BBOX = (17.80, 59.215, 18.26, 59.435)  # lon0, lat0, lon1, lat1
+BBOX = (17.70, 59.14, 18.36, 59.51)  # lon0, lat0, lon1, lat1: every station in the data, with a margin
 
 
 def xy(lon, lat):
@@ -231,6 +231,35 @@ water = shape(json.load(open(K + 'vatten.geo.json'))['features'][0]['geometry'])
 from shapely.affinity import affine_transform
 # lon/lat -> metres
 water = affine_transform(water, [MX, 0, 0, -MY, -LON0 * MX, LAT0 * MY])
+# the sea outside the city, from the OSM coastline (land lies left of each way):
+# every 100 m cell near a coastline takes the side of its nearest coastline point
+from scipy.spatial import cKDTree
+_pts, _dir, _end = [], [], []
+for r in json.load(open(J + 'coastline.json'))['runs']:
+    if len(r) < 2: continue
+    P = np.array([xy(lo, la) for la, lo in r])
+    seg = np.diff(P, axis=0); L = np.hypot(seg[:, 0], seg[:, 1])
+    for i in range(len(seg)):
+        n = max(1, int(L[i] // 25))
+        for k in range(n):
+            t = k / n; _pts.append(P[i] + seg[i] * t); _dir.append(seg[i] / (L[i] + 1e-9))
+            _end.append(1 if (i == 0 and k < 3) or (i == len(seg) - 1 and k > n - 3) else 0)
+_pts = np.array(_pts); _dir = np.array(_dir); _end = np.array(_end); tree = cKDTree(_pts)
+SC_ = 100
+gx_ = np.arange(X0 + SC_ / 2, X1, SC_); gy_ = np.arange(Y0 + SC_ / 2, Y1, SC_)
+GX, GY = np.meshgrid(gx_, gy_); Q = np.stack([GX.ravel(), GY.ravel()], 1)
+dist, idx = tree.query(Q, k=12)
+v = Q[:, None, :] - _pts[idx]; d = _dir[idx]
+side = -d[..., 0] * v[..., 1] + d[..., 1] * v[..., 0]        # > 0: land (left of the way, y axis flipped)
+w = 1 / (dist + 20) * (1 - _end[idx])
+vote = (np.sign(side) * w).sum(1) / (w.sum(1) + 1e-9)
+seaC = (vote < -0.6) & (dist[:, 0] < 1800)
+from shapely.geometry import box as _box
+cells = [_box(x - SC_ / 2, y - SC_ / 2, x + SC_ / 2, y + SC_ / 2) for (x, y), s_ in zip(Q, seaC) if s_]
+sea = unary_union(cells).buffer(60).buffer(-60).buffer(-160).buffer(160)
+print('sea km2', round(sea.area / 1e6, 1))
+sea = [sea]
+water = unary_union([water.buffer(0)] + sea)
 water = water.intersection(CLIP).simplify(12)
 water_rings = []
 polys = list(water.geoms) if hasattr(water, 'geoms') else [water]

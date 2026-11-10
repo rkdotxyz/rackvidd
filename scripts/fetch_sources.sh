@@ -7,3 +7,4 @@ clone ludvigwarpe/travelplanner travelplanner          # SL GTFS extract (weekda
 clone monolu/jetlag-stockholm jetlag-stockholm          # OSM coastline, SL rail geometry
 clone krasch/stockholm-stadsdelar stockholm-stadsdelar  # Stockholm stad districts + water (CC0)
 clone seunajetomobi/stockholm-life stockholm-life       # OSM parks, lakes, roads
+clone GioPalusa/SwedenGeoJSON SwedenGeoJSON             # municipality borders, Lantmäteriet 2026 (CC0)

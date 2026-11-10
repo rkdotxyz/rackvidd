@@ -1,5 +1,8 @@
-"""Clean basemap for v10: parks/forest, lakes, main roads (OSM via seunajetomobi/stockholm-life, ODbL),
-district outlines + names (Stockholm stad, CC0). Adds window.DATA.base to data_v4."""
+"""Step 2 of the data pipeline: the greyscale basemap.
+
+Parks/forest, lakes and main roads (OSM via seunajetomobi/stockholm-life, ODbL), district
+outlines and names (Stockholm stad, CC0) and municipality borders and names (Lantmäteriet 2026,
+CC0, via GioPalusa/SwedenGeoJSON). Reads build/timetable.js, writes data/stockholm.js."""
 import base64, json, math
 import numpy as np
 from shapely.geometry import Polygon, LineString, shape, box
@@ -74,7 +77,24 @@ for f in dd['features']:
                  'ring': q(list(big.simplify(25).exterior.coords))})
 print('districts', len(DIST), DIST[0]['name'])
 
-D['base'] = {'green': GREEN, 'lakes': LAKES, 'roads': ROADL, 'districts': DIST,
+import glob
+MUNI = []
+for f in sorted(glob.glob('sources/SwedenGeoJSON/Kommun/regioner/01*.geojson')):
+    d = json.load(open(f)); feats = d['features'] if 'features' in d else [d]
+    g = unary_union([shape(x['geometry']) for x in feats]).buffer(0)
+    g = affine_transform(g, [M['mx'], 0, 0, -M['my'], -M['lon0'] * M['mx'], M['lat0'] * M['my']])
+    if not g.intersects(CLIP): continue
+    name = feats[0]['properties']['namnkortform']
+    rings = []
+    for p in (g.geoms if hasattr(g, 'geoms') else [g]):
+        if p.area < 2e5: continue
+        bl = p.exterior.intersection(CLIP.buffer(2000))
+        for l in (bl.geoms if hasattr(bl, 'geoms') else [bl]):
+            if l.geom_type == 'LineString' and l.length > 300: rings.append(q(list(l.simplify(30).coords)))
+    vis = g.intersection(CLIP); pt = vis.representative_point() if not vis.is_empty else None
+    MUNI.append({'name': name, 'city': name == 'Stockholm', 'lines': rings, 'x': round(pt.x) if pt else None, 'y': round(pt.y) if pt else None, 'area': round(vis.area / 1e6, 1)})
+print('municipalities', len(MUNI), [m['name'] for m in MUNI])
+D['base'] = {'muni': MUNI,'green': GREEN, 'lakes': LAKES, 'roads': ROADL, 'districts': DIST,
              'attribution': 'Parks, lakes, roads © OpenStreetMap contributors (ODbL), via github.com/seunajetomobi/stockholm-life · districts Stockholm stad (CC0)'}
 out = 'window.DATA=' + json.dumps(D, separators=(',', ':'), ensure_ascii=False) + ';'
 open('data/stockholm.js', 'w').write(out); print('data/stockholm.js', round(len(out) / 1e6, 2), 'MB')
