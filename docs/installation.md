@@ -78,7 +78,7 @@ Everything runs in one web page in a browser on the laptop, with no server and n
 
 ## Setup on the day
 
-About **2 hours** to set up and **30 minutes** to pack down.
+About **1 hour** to set up and **30 minutes** to pack down.
 
 1. Place the table about 3 m from the wall and tape down the power cable.
 2. Put the projector on its riser at the back edge, aim it at the wall, and square the image with keystone or lens shift.
@@ -97,24 +97,3 @@ About **2 hours** to set up and **30 minutes** to pack down.
 | Projector bumped or moved | Painting is projector-independent; re-square the image, no recalibration needed |
 | Laptop or browser crash | Reload the page: kiosk mode and calibration are back in under a minute |
 | No projector available from the venue | Rented with the 1,500 SEK, or shown on a large TV instead |
-
-## Accessibility and safety
-
-- No sound, no flashing, no fast motion: the painting grows over about 3 seconds.
-- The table works standing or seated, including from a wheelchair. The token is large enough to grip easily.
-- All cables are taped down and nothing hangs overhead. The projector sits at the far end of the table, out of easy reach, with its vents clear.
-- The piece runs unattended. I'll be there at busy times to talk to visitors about it.
-
-## Build plan
-
-| When | What |
-| --- | --- |
-| Done | Routing, ink painting, growing lines, paper sheet, live prototype |
-| 18–24 Nov | Camera tracking with markers, kiosk mode, attract mode |
-| 25 Nov – 1 Dec | Print the map, make the tokens, full-size test with a projector |
-| 2–8 Dec | Fixes from testing, rehearse setup, pack the kit |
-| 9–10 Dec | NAVET Week |
-
-## Credits
-
-Map data © OpenStreetMap contributors (ODbL), Stockholm stad (CC0), municipal borders Lantmäteriet (CC0). SL timetable data from Samtrafiken/SL. By [Rama Krushna Behera](https://ramakrushna.xyz), MSc Interactive Media Technology, KTH.
