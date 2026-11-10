@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 470" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <rect width="960" height="470" fill="#ffffff"/>
+  <text x="40" y="38" font-size="18" font-weight="600" fill="#1f1f1f">Side view</text>
+  <text x="40" y="60" font-size="13" fill="#6b6b6b">Scale ≈ 1 m = 100 px · all sizes approximate</text>
+
+  <!-- floor + wall -->
+  <line x1="60" y1="420" x2="760" y2="420" stroke="#3a3a3a" stroke-width="2"/>
+  <line x1="100" y1="90" x2="100" y2="420" stroke="#3a3a3a" stroke-width="6"/>
+  <!-- projection on wall: 0.9 to 2.3 m -->
+  <rect x="103" y="190" width="9" height="140" fill="#3a7bd5"/>
+  <text x="122" y="185" font-size="12" fill="#2b5ea6">Image ≈ 0.9–2.3 m above the floor</text>
+
+  <!-- beam from lens (412,330) -->
+  <polygon points="412,331 112,190 112,330" fill="#3a7bd5" fill-opacity="0.08" stroke="#3a7bd5" stroke-opacity="0.35" stroke-dasharray="4 4"/>
+
+  <!-- table: top at 0.75 m (y=345), from x=400 to 480 -->
+  <rect x="400" y="343" width="84" height="5" fill="#3a3a3a"/>
+  <line x1="406" y1="348" x2="406" y2="420" stroke="#3a3a3a" stroke-width="3"/>
+  <line x1="478" y1="348" x2="478" y2="420" stroke="#3a3a3a" stroke-width="3"/>
+  <!-- riser + projector -->
+  <rect x="404" y="335" width="22" height="8" fill="#b9b9b6"/>
+  <rect x="404" y="320" width="26" height="15" rx="2" fill="#3a3a3a"/>
+  <circle cx="406" cy="327" r="3" fill="#3a7bd5"/>
+  <!-- map on table -->
+  <rect x="440" y="340" width="30" height="3" fill="#6b6b6b"/>
+  <!-- camera arm: clamp at back, post up, arm over map -->
+  <line x1="432" y1="343" x2="432" y2="290" stroke="#2f9e6a" stroke-width="3"/>
+  <line x1="432" y1="290" x2="456" y2="290" stroke="#2f9e6a" stroke-width="3"/>
+  <rect x="449" y="290" width="14" height="9" rx="2" fill="#2f9e6a"/>
+  <polygon points="456,299 434,340 478,340" fill="#2f9e6a" fill-opacity="0.12" stroke="#2f9e6a" stroke-dasharray="3 3"/>
+
+  <!-- visitor -->
+  <circle cx="625" cy="245" r="15" fill="#eeeeec" stroke="#6b6b6b"/>
+  <path d="M625 260 L625 345 M625 345 L613 420 M625 345 L637 420 M625 280 L600 330 M625 280 L645 320" fill="none" stroke="#6b6b6b" stroke-width="3" stroke-linecap="round"/>
+  <line x1="615" y1="245" x2="112" y2="255" stroke="#8a8a87" stroke-dasharray="2 5"/>
+  <text x="330" y="240" font-size="12" fill="#8a8a87">eye line</text>
+
+  <!-- dimensions -->
+  <g stroke="#8a8a87">
+    <line x1="112" y1="445" x2="406" y2="445"/><line x1="112" y1="438" x2="112" y2="452"/><line x1="406" y1="438" x2="406" y2="452"/>
+    <line x1="388" y1="345" x2="388" y2="420"/><line x1="382" y1="345" x2="394" y2="345"/><line x1="382" y1="420" x2="394" y2="420"/>
+    <line x1="520" y1="290" x2="520" y2="340"/><line x1="514" y1="290" x2="526" y2="290"/><line x1="514" y1="340" x2="526" y2="340"/>
+  </g>
+  <line x1="463" y1="290" x2="514" y2="290" stroke="#d6d6d3" stroke-dasharray="2 3"/>
+  <line x1="470" y1="340" x2="514" y2="340" stroke="#d6d6d3" stroke-dasharray="2 3"/>
+  <g font-size="12" fill="#6b6b6b">
+    <text x="259" y="462" text-anchor="middle">≈ 3 m from lens to wall</text>
+    <text x="380" y="388" text-anchor="end">table 0.75 m</text>
+    <text x="530" y="312">≈ 50 cm</text>
+    
+  </g>
+
+  <!-- notes -->
+  <g font-size="12" fill="#6b6b6b">
+    <text x="680" y="120" font-weight="600" fill="#1f1f1f" font-size="13">Why this way round</text>
+    <text x="680" y="142">The projector faces away from</text>
+    <text x="680" y="158">visitors, so nobody walks</text>
+    <text x="680" y="174">through the beam or casts a</text>
+    <text x="680" y="190">shadow. Tilt it up a little and</text>
+    <text x="680" y="206">correct with keystone or lens</text>
+    <text x="680" y="222">shift. Nothing hangs from the</text>
+    <text x="680" y="238">ceiling and the projector never</text>
+    <text x="680" y="254">points down, so there's no rigging.</text>
+  </g>
+</svg>

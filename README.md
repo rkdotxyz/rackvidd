@@ -6,6 +6,8 @@ Click anywhere on the map on the left. On the blank sheet of watercolour paper o
 
 *Räckvidd* is Swedish for *reach*. It is an interactive piece made for NAVET Week at Scenkonstmuseet, Stockholm (December 2026).
 
+**Exhibition setup:** how the physical installation (printed map, token, camera, projector) is laid out and how it works is described in [docs/installation.md](docs/installation.md).
+
 ## Run it
 
 Open `index.html` in a browser. It is one self-contained file and works offline (fonts load from Google Fonts when online).
